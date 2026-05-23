@@ -21,7 +21,7 @@ services:
     container_name: smou_web
     restart: always
     ports:
-      - "80:5000" # Mapeia a porta 80 do servidor (padrão web) para a 5000 do Flask
+      - "5001:5000" # Mapeia a porta 80 do servidor (padrão web) para a 5000 do Flask
     depends_on:
       - db
   #environment:
