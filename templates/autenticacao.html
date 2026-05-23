@@ -70,65 +70,38 @@
 {% block scripts %}
 
 <script>
+    // $(document).ready garante que o código só rode quando o HTML estiver 100% pronto
+    jQuery(document).ready(function($) {
+        console.log("DOM pronto. Anexando evento de submit...");
 
-    /*Login request*/
-    jQuery('#loginForm').on('submit', function (e) {
-        e.preventDefault();
-        jQuery.ajax({
-            url: '/login',
-            type: 'POST',
-            data: { 'user': jQuery('#user').val(), 'password': jQuery('#password').val() },
-            success: function (response) {
-                if (response['Login']) {
-                    jQuery('#message').modal('show');
-                    jQuery('#messageText').text('Login efetuado com sucesso');
-                    setTimeout(function () { jQuery('#message').modal('hide') }, 1500);
-                    location.reload();
+        $('#loginForm').on('submit', function (e) {
+            console.log("Evento submit capturado com sucesso!");
+            e.preventDefault();
+
+            var userData = { 
+                'user': $('#user').val(), 
+                'password': $('#password').val() 
+            };
+
+            $.ajax({
+                url: '/login',
+                type: 'POST',
+                data: userData,
+                success: function (response) {
+                    console.log("Resposta do servidor:", response);
+                    if (response['Login']) {
+                        window.location.reload();
+                    } else {
+                        alert('Usuário ou senha incorretos');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error("Erro na requisição AJAX:", error);
+                    alert("Erro ao conectar com o servidor.");
                 }
-                else {
-                    jQuery('#message').modal('show');
-                    jQuery('#messageText').text('Usuário e/ou senha incorretos');
-                    setTimeout(function () { jQuery('#message').modal('hide') }, 1500);
-
-                }
-
-            }
+            });
         });
     });
-
-    function togglePasswordVisibility() {
-        var passwordInput = document.getElementById("password");
-        var eyeIcon = document.getElementById("eye-icon");
-
-        if (passwordInput.type === "password") {
-            passwordInput.type = "text";
-            eyeIcon.classList.remove("fa-eye");
-            eyeIcon.classList.add("fa-eye-slash");
-        } else {
-            passwordInput.type = "password";
-            eyeIcon.classList.remove("fa-eye-slash");
-            eyeIcon.classList.add("fa-eye");
-        }
-    }
-
-$('#toggleSenha').on('click', function(){
-
-    const campoSenha = $('#password');
-
-    if(campoSenha.attr('type') === 'password'){
-
-        campoSenha.attr('type', 'text');
-        $(this).removeClass('fa-eye').addClass('fa-eye-slash');
-
-    } else {
-
-        campoSenha.attr('type', 'password');
-        $(this).removeClass('fa-eye-slash').addClass('fa-eye');
-
-    }
-
-});
-
 </script>
 
 {% endblock %}

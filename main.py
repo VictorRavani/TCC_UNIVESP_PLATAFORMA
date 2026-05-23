@@ -30,7 +30,7 @@ login_manager = flask_login.LoginManager()
 login_manager.init_app(app)
 
 #Database configuration
-databaseOBJ=database.postgresDatabase(host='localhost')
+databaseOBJ = database.postgresDatabase(host='db')
 
 ################################################## AUTHENTICATION ####################################################
 
@@ -77,13 +77,15 @@ def unauth_handler():
 
 @app.route('/login', methods=['POST'])
 def login():
-
     user = flask.request.form.get('user')
     password = flask.request.form.get('password')
+
+    print(f"DEBUG: Tentativa de login para usuário: {user}")
 
     if not user or not password:
         return flask.abort(400)
 
+    # 1. Primeiro buscamos no banco
     credentials = databaseOBJ.readRaw(
         """
         SELECT id, usuario, privilegio, senha, setor
@@ -94,12 +96,17 @@ def login():
         realdict=False
     )
 
+    # 2. Depois verificamos se achamos algo
     if credentials:
-
         senha_hash = credentials[0][3]
-
-        if bcrypt.checkpw(password.encode(), senha_hash.encode()):
-
+        print(f"DEBUG: Hash recuperado do banco: {senha_hash}")
+        
+        # 3. Teste de comparação
+        # Certifique-se de codificar como utf-8
+        resultado = bcrypt.checkpw(password.encode('utf-8'), senha_hash.encode('utf-8'))
+        print(f"DEBUG: Resultado do checkpw: {resultado}")
+        
+        if resultado:
             usuario_logado = User()
             usuario_logado.id = credentials[0][0]
             usuario_logado.usuario = credentials[0][1]
@@ -107,9 +114,9 @@ def login():
             usuario_logado.setor = credentials[0][4]
 
             flask_login.login_user(usuario_logado)
-
             return flask.make_response({'Login': True})
 
+    print("DEBUG: Login falhou (usuário não encontrado ou senha errada)")
     return flask.make_response({'Login': False})
 
 @app.route('/logout', methods=['GET'])
@@ -128,12 +135,13 @@ def privilege_required(level):
 
             if current_user.privileges < level:
                 flash("Você não tem permissão para acessar esta página.")
-                return redirect(url_for('monitoramento_OP'))
+                # Redireciona para a tela principal (Ocorrências) em vez de monitoramento
+                return redirect(url_for('setup_pcp'))
 
             return f(*args, **kwargs)
 
         return decorated_function
-    return decorator
+    return decorator    
 ######################################################## CRUD RESOURCES ####################################################
 
 @app.route('/usuarios', methods=['GET', 'DELETE', 'PUT', 'POST'])
@@ -550,7 +558,7 @@ def adicionar_produto():
 
 @app.route('/adm/clientes')
 @flask_login.login_required
-@privilege_required(2)
+@privilege_required(1)
 def adm_clientes():
     return render_template('adm_clientes.html')
 
@@ -793,32 +801,11 @@ def autenticacao():
     print("PRIV:", getattr(flask_login.current_user, 'privileges', 'SEM privileges'))
     print("SETOR:", getattr(flask_login.current_user, 'setor', 'SEM setor'))
 
+    # Se o usuário já estiver logado, redireciona sempre para setup_pcp (Ocorrências)
     if flask_login.current_user.is_authenticated:
+        return flask.redirect(flask.url_for('setup_pcp'))
 
-        privilegio = flask_login.current_user.privileges
-
-        # Nível 1 → monitoramento do próprio setor
-        if privilegio == 1:
-
-            setor = flask_login.current_user.setor
-
-            if setor:
-                return flask.redirect(
-                    flask.url_for('monitoramento_OP', processo=setor)
-                )
-            else:
-                # Se por algum motivo não tiver setor definido
-                return flask.redirect(
-                    flask.url_for('monitoramento_OP', processo='geral')
-                )
-
-        # Nível 2 (PCP) ou 3 (ADM) → visão geral
-        elif privilegio in [2,3]:
-
-            return flask.redirect(
-                flask.url_for('monitoramento_OP', processo='geral')
-            )
-
+    # Se não estiver logado, mostra a tela de login
     return flask.render_template('autenticacao.html')
 
 @app.route('/dados_historico')
@@ -1105,7 +1092,7 @@ def historico():
 
 @app.route('/cancelar_ordem', methods=['POST'])
 @flask_login.login_required
-@privilege_required(2)
+@privilege_required(1)
 def cancelar_ordem():
 
     id_ordem = flask.request.form.get('id')
@@ -1604,7 +1591,7 @@ def dados_operadores():
 
 @app.route('/adicionar_ordem', methods=['POST'])
 @flask_login.login_required
-@privilege_required(2)
+@privilege_required(1)
 def adicionar_ordem():
     global databaseOBJ
     from datetime import datetime

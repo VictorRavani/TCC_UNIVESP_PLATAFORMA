@@ -1,263 +1,164 @@
 {% extends "base.html" %}
 {% block content %}
 
-<body class="background-page-default"></body>
-    <div class="container-fluid text-black mt-4">
-        <div class="row justify-content-center">
-            <div class="col-12 col-lg-4"></div>
-            <div class="col-6 col-lg-4 d-flex align-items-center justify-content-center">
-                <h4>Clientes</h4>
+<style>
+    /* Estilos customizados para a página do ArvoreAlerta */
+    .arvore-header {
+        background: linear-gradient(135deg, #1b5e20 0%, #4caf50 100%);
+        color: white;
+        border-radius: 10px;
+        padding: 3rem 2rem;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        margin-bottom: 2rem;
+    }
+    .arvore-title {
+        font-weight: 800;
+        font-size: 2.5rem;
+    }
+    .btn-plataforma {
+        background-color: #ff9800;
+        border: none;
+        color: white;
+        font-size: 1.3rem;
+        font-weight: bold;
+        padding: 15px 30px;
+        border-radius: 50px;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .btn-plataforma:hover {
+        background-color: #e68a00;
+        transform: translateY(-3px);
+        box-shadow: 0 10px 15px rgba(255, 152, 0, 0.4);
+        color: white;
+    }
+    .info-card {
+        border: none;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        transition: transform 0.2s;
+        height: 100%;
+    }
+    .info-card:hover {
+        transform: translateY(-5px);
+    }
+    .icon-feature {
+        font-size: 2rem;
+        color: #2e7d32;
+        margin-bottom: 15px;
+    }
+    .validation-box {
+        background-color: #e3f2fd;
+        border-left: 5px solid #1976d2;
+        padding: 20px;
+        border-radius: 0 10px 10px 0;
+    }
+    .link-list a {
+        text-decoration: none;
+        color: #1565c0;
+        font-weight: 600;
+        display: block;
+        margin-bottom: 10px;
+        padding: 10px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        transition: background 0.2s;
+    }
+    .link-list a:hover {
+        background: #e3f2fd;
+    }
+</style>
+
+<div class="container mt-4 mb-5">
+    
+    <div class="row">
+        <div class="col-12 text-center arvore-header">
+            <h1 class="arvore-title"><i class="fas fa-tree"></i> ArvoreAlerta v2.0</h1>
+            <p class="lead mt-3">Sistema de detecção de quedas de árvores e desmatamento utilizando fusão de dados de sensoriamento remoto e NDVI Sentinel-2.</p>
+            
+            <div class="mt-4">
+                <a href="https://sposigor.github.io/tcc-arvorealerta/" target="_blank" class="btn btn-plataforma">
+                    <i class="fas fa-map-marked-alt mr-2"></i> Acessar Plataforma Interativa
+                </a>
             </div>
-            <div class="col-12 col-lg-4 d-flex align-items-center justify-content-end">
-                <button type="button" class="btn btn-success mx-1" id="botao-adicionar">
-                    <i class="fas fa-plus"></i> Adicionar
-                </button>
-                <button type="button" class="btn btn-primary mx-1" id="botao-editar">
-                    <i class="fas fa-edit"></i> Editar
-                </button>
-                <button type="button" class="btn btn-danger mx-1" id="botao-apagar">
-                    <i class="fas fa-trash"></i> Excluir
-                </button>
+        </div>
+    </div>
+
+    <div class="row mt-2">
+        <div class="col-lg-8 mb-4">
+            <div class="card info-card p-4">
+                <h4 class="text-success font-weight-bold mb-4"><i class="fas fa-info-circle"></i> Sobre o Sistema</h4>
+                <p class="text-justify">
+                    O <strong>ArvoreAlerta</strong> é uma plataforma desenvolvida como Trabalho de Conclusão de Curso (TCC) que comprova a viabilidade do uso de APIs públicas e gratuitas (ESA Copernicus, NASA FIRMS, INPE TerraBrasilis) para o monitoramento ambiental urbano e o rastreamento preciso do desmatamento.
+                </p>
+                <p class="text-justify">
+                    A inteligência do sistema baseia-se na <strong>comparação histórica do NDVI</strong>: o índice atual é cruzado com o mesmo período do ano anterior. Ao identificar anomalias (como a redução drástica de biomassa), a plataforma reforça o nível de confiança cruzando esses dados com evidências corroborantes. Isso produz alertas com múltiplas linhas de evidência, muito mais confiáveis e defensáveis do que os baseados em NDVI isolado.
+                </p>
+
+                <h5 class="mt-4 mb-3 font-weight-bold">Fontes de Dados Integradas:</h5>
+                <ul class="list-unstyled">
+                    <li class="mb-2"><i class="fas fa-leaf text-success mr-2"></i> <strong>NDVI (Sentinel-2):</strong> Índice ótico de vegetação.</li>
+                    <li class="mb-2"><i class="fas fa-satellite-dish text-secondary mr-2"></i> <strong>Radar (Sentinel-1):</strong> Retroespalhamento VH (independente de cobertura de nuvens).</li>
+                    <li class="mb-2"><i class="fas fa-fire text-danger mr-2"></i> <strong>Focos de Queimada (NASA FIRMS):</strong> Evidência correlacional térmica.</li>
+                    <li class="mb-2"><i class="fas fa-exclamation-triangle text-warning mr-2"></i> <strong>DETER/INPE:</strong> Polígonos oficiais de alerta (Amazônia e Cerrado).</li>
+                </ul>
             </div>
         </div>
 
-        <div class="row justify-content-center mt-4">
-            <div class="col-12 col-xl-7 px-1 py-1">
-                <div class="card bg-light border-info">
-                    <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table text-black text-center" id="tabela-clientes"></table>
-                        </div>
-                    </div>   
-                </div>
+        <div class="col-lg-4 mb-4">
+            <div class="validation-box h-100 d-flex flex-column justify-content-center">
+                <h5 class="font-weight-bold text-primary"><i class="fas fa-chart-line"></i> Validação Científica</h5>
+                <p class="mt-3 mb-0 text-justify">
+                    O sistema foi rigorosamente validado utilizando a comparação <strong>Bland-Altman contra o MODIS/NASA AppEEARS</strong>.
+                </p>
+                <hr>
+                <ul class="list-unstyled mb-0">
+                    <li><i class="fas fa-check-circle text-success mr-2"></i> <strong>Viés:</strong> +0.012</li>
+                    <li><i class="fas fa-check-circle text-success mr-2"></i> <strong>Concordância:</strong> 90.7% das observações dentro dos limites.</li>
+                    <li><i class="fas fa-check-circle text-success mr-2"></i> <strong>Amostra:</strong> n = 43</li>
+                </ul>
             </div>
         </div>
     </div>
 
-    <!-- Modal Adicionar -->
-    <div class="modal fade" id="adicionar-modal">
-        <div class="modal-dialog modal-sm">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Adicionar Produto</h5>
-                    <button type="button" class="close" data-dismiss="modal">
-                        <span>&times;</span>
-                    </button>
-                </div>
+    <div class="row mt-2">
+        <div class="col-12">
+            <h4 class="text-success font-weight-bold mb-3"><i class="fas fa-link"></i> Recursos e Documentação</h4>
+        </div>
+        
+        <div class="col-md-4 mb-3">
+            <div class="card info-card p-3">
+                <div class="text-center icon-feature"><i class="fas fa-project-diagram"></i></div>
+                <h5 class="text-center font-weight-bold">Arquitetura</h5>
+                <p class="text-center text-muted small">Visualize o fluxo de dados e integrações.</p>
+                <a href="https://sposigor.github.io/tcc-arvorealerta/diagrama.html" target="_blank" class="btn btn-outline-success btn-sm w-100">Ver Diagramas</a>
+            </div>
+        </div>
 
-                <div class="modal-body">
-                    <form id="adicionar-formulario">
+        <div class="col-md-4 mb-3">
+            <div class="card info-card p-3">
+                <div class="text-center icon-feature"><i class="fas fa-cogs"></i></div>
+                <h5 class="text-center font-weight-bold">API Swagger</h5>
+                <p class="text-center text-muted small">Documentação interativa dos endpoints.</p>
+                <a href="https://arvore-alerta-production.up.railway.app/docs" target="_blank" class="btn btn-outline-success btn-sm w-100">Acessar Swagger</a>
+            </div>
+        </div>
 
-                        <div class="form-group">
-                            <label>Nome</label>
-                            <input type="text" class="form-control" id="adicionar-nome" required>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Código</label>
-                            <input type="text" class="form-control" id="adicionar-codigo" required>
-                            <span class="text-danger" id="codigo-erro"></span>
-                        </div>
-
-                        <button type="submit" class="btn btn-info w-100 mt-3">
-                            Salvar
-                        </button>
-                    </form>
-                </div>
+        <div class="col-md-4 mb-3">
+            <div class="card info-card p-3">
+                <div class="text-center icon-feature"><i class="fab fa-github text-dark"></i></div>
+                <h5 class="text-center font-weight-bold">Código-Fonte</h5>
+                <p class="text-center text-muted small">Repositório completo do projeto.</p>
+                <a href="https://github.com/Sposigor/tcc-arvorealerta" target="_blank" class="btn btn-outline-dark btn-sm w-100">Acessar GitHub</a>
             </div>
         </div>
     </div>
 
-    <!-- Modal Editar -->
-    <div class="modal fade" id="editar-modal">
-        <div class="modal-dialog modal-sm">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Editar Produto</h5>
-                    <button type="button" class="close" data-dismiss="modal">
-                        <span>&times;</span>
-                    </button>
-                </div>
-
-                <div class="modal-body">
-                    <form id="editar-formulario">
-
-                        <input type="hidden" id="editar-id">
-
-                        <div class="form-group">
-                            <label>Nome</label>
-                            <input type="text" class="form-control" id="editar-nome" required>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Código</label>
-                            <input type="text" class="form-control" id="editar-codigo" required>
-                        </div>
-
-                        <button type="submit" class="btn btn-info w-100 mt-3">
-                            Salvar
-                        </button>
-
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
+</div>
 
 {% endblock %}
+
 {% block scripts %} 
-
 <script>
-
-var table = $('#tabela-clientes').DataTable({
-    ajax: {
-        url: '/clientes',
-        dataSrc: 'clientes'
-    },
-    pageLength: 10,
-    bLengthChange: false,
-    language: {
-        url: "/static/js/pt-BR.json" 
-    },
-    columns: [
-        { data: "nome", title: "Nome" },
-        { data: "codigo", title: "Código" }
-    ]
-});
-
-$('#tabela-clientes').on('click', 'tbody tr', function () {
-
-    var row = table.row(this);
-    if (!row.data()) return;
-
-    table.$('tr.tableSelected').removeClass('tableSelected');
-    $(this).addClass('tableSelected');
-});
-
-$('#botao-adicionar').click(function(){
-    $('#adicionar-modal').modal('show');
-});
-
-$('#adicionar-formulario').submit(function(e){
-    e.preventDefault();
-
-    $.post('/clientes', {
-        nome: $('#adicionar-nome').val(),
-        codigo: $('#adicionar-codigo').val()
-    }, function(response){
-        if(response.success){
-            $('#adicionar-modal').modal('hide');
-                        Swal.fire({
-                icon: 'success',
-                title: 'Operação concluída',
-                text: 'Cliente cadastrado com sucesso.',
-                timer: 1500,
-                showConfirmButton: false
-            });
-            table.ajax.reload(null, false);
-        } else {
-            Swal.fire({
-                icon: 'error',
-                title: 'Erro',
-                text: response.error
-            });
-        }
-    });
-});
-
-$('#botao-editar').click(function(){
-
-    var selectedRow = table.row('.tableSelected');
-    if(!selectedRow.data()){
-        Swal.fire({
-            icon: 'error',
-            title: 'Erro',
-            text: "Selecione um cliente."
-        });
-        return;
-    }
-
-    var data = selectedRow.data();
-
-    $('#editar-id').val(data.id);
-    $('#editar-nome').val(data.nome);
-    $('#editar-codigo').val(data.codigo);
-
-    $('#editar-modal').modal('show');
-});
-
-$('#editar-formulario').submit(function(e){
-    e.preventDefault();
-
-    $.ajax({
-        url: '/clientes',
-        type: 'PUT',
-        data: {
-            id: $('#editar-id').val(),
-            nome: $('#editar-nome').val(),
-            codigo: $('#editar-codigo').val()
-        },
-        success: function(response){
-
-            if(response.success){
-
-                $('#editar-modal').modal('hide');
-                table.ajax.reload(null, false);
-
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Operação concluída',
-                    text: 'Cliente atualizado com sucesso.',
-                    timer: 1500,
-                    showConfirmButton: false
-                });
-
-            } else {
-
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Erro',
-                    text: response.error
-                });
-
-            }
-        }
-                
-    });
-});
-
-$('#botao-apagar').click(function(){
-
-    var selectedRow = table.row('.tableSelected');
-    if(!selectedRow.data()){
-        Swal.fire({
-            icon: 'error',
-            title: 'Erro',
-            text: "Selecione um cliente."
-        });
-        return;
-    }
-
-    var data = selectedRow.data();
-
-    $.ajax({
-        url: '/clientes',
-        type: 'DELETE',
-        data: { id: data.id },
-        success: function(){
-            table.ajax.reload(null, false);
-            Swal.fire({
-                icon: 'success',
-                title: 'Operação concluída',
-                text: 'Cliente excluído com sucesso.',
-                timer: 1500,
-                showConfirmButton: false
-            });
-        }
-    });
-});
-
-
+    console.log("ArvoreAlerta v2.0 - Página carregada com sucesso.");
 </script>
-
-{% endblock %}  
+{% endblock %}

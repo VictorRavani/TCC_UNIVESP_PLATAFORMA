@@ -6,6 +6,7 @@ import time
 class postgresDatabase():
     def __init__(self, user='postgres', password='postgres', host='localhost', dbname='db_aro', port='5432'):
         self.lastError = None
+        # Certifique-se de que a string de conexão usa esses mesmos nomes de variáveis
         self.connectionString = f"user={user} password={password} host={host} dbname={dbname} port={port}"
 
     def readRaw(self, sql, params=None, realdict=False):
